@@ -1,12 +1,12 @@
+BIN := "./bin/server"
+
 build-server:
 	go build -o bin/server ./cmd/server
 
 build-client:
 	go build -o bin/client ./cmd/client
 
-build: 
-	build-server 
-	build-client
+build: build-server build-client
 
 version: build
 	$(BIN) version
