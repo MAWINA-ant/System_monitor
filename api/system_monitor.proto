@@ -10,7 +10,7 @@ service StatsService {
 
 message StatsRequest {
   int64 n_seconds = 1; // как часто отдавать снапшот
-  int64 m_seconds = 2; // окно усреднения
+  int64 m_seconds = 2; // промежуток усреднения
 }
 
 message Snapshot {
