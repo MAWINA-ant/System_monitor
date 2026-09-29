@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package statspb;
+
+option go_package = "github.com/MAWINA-ant/System_monitor/api/statspb;statspb";
+
+service StatsService {
+  rpc GetStats(StatsRequest) returns (stream Snapshot);
+}
+
+message StatsRequest {
+  int64 n_seconds = 1; // как часто отдавать снапшот
+  int64 m_seconds = 2; // окно усреднения
+}
+
+message Snapshot {
+  int64 timestamp = 1;
+  LoadAverage load_average = 2;
+  CPULoad cpu_load = 3;
+  repeated DiskLoad disk_load = 4;
+  repeated DiskUsage disk_usage = 5;
+  NetworkTopTalkers network_top_talkers = 6;
+  NetworkStats network_stats = 7;
+}
+
+message LoadAverage {
+  double load1 = 1;
+  double load5 = 2;
+  double load15 = 3;
+}
+
+message CPULoad {
+  double user_percent = 1;
+  double system_percent = 2;
+  double idle_percent = 3;
+}
+
+message DiskLoad {
+  string device = 1;
+  double tps = 2;
+  double kb_per_sec = 3;
+}
+
+message DiskUsage {
+  string filesystem = 1;
+  string mount_point = 2;
+  int64 used_mb = 3;
+  double used_percent = 4;
+  int64 used_inodes = 5;
+  double used_inodes_percent = 6;
+}
+
+message NetworkTopTalkers {
+  repeated ProtocolStat by_protocol = 1;
+  repeated TrafficStat by_traffic = 2;
+}
+
+message ProtocolStat {
+  string protocol = 1;
+  int64 bytes = 2;
+  double percent = 3;
+}
+
+message TrafficStat {
+  string source = 1;
+  string destination = 2;
+  string protocol = 3;
+  double bytes_per_sec = 4;
+}
+
+message NetworkStats {
+  repeated ListeningSocket listening_sockets = 1;
+  repeated ConnectionStateCount connection_states = 2;
+}
+
+message ListeningSocket {
+  string command = 1;
+  int32 pid = 2;
+  string user = 3;
+  string protocol = 4;
+  int32 port = 5;
+}
+
+message ConnectionStateCount {
+  string state = 1;
+  int32 count = 2;
+}
