@@ -15,7 +15,7 @@ func TestCollector_Collect(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "loadavg")
 	content := "0.52 0.58 0.59 2/543 12345\n"
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatalf("failed to write fixture: %v", err)
 	}
 
@@ -35,7 +35,7 @@ func TestCollector_Collect(t *testing.T) {
 func TestCollector_Collect_InvalidFormat(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "loadavg")
-	if err := os.WriteFile(path, []byte("garbage"), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte("garbage"), 0o600); err != nil {
 		t.Fatalf("failed to write fixture: %v", err)
 	}
 
