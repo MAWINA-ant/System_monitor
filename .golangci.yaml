@@ -51,6 +51,15 @@ linters:
     funlen:
       lines: 150
       statements: 80
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          allow:
+            - $gostd
+            - github.com/MAWINA-ant/System_monitor
+            - google.golang.org/grpc
+            - google.golang.org/protobuf
   exclusions:
     generated: lax
     presets:
