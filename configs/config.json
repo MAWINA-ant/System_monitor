@@ -1,0 +1,9 @@
+{
+  "subsystems": {
+    "loadAverage": true,
+    "cpu": true,
+    "diskLoad": true,
+    "diskUsage": true,
+    "networkStats": true
+  }
+}

@@ -4,12 +4,12 @@ import "time"
 
 type Snapshot struct {
 	Timestamp         time.Time
-	LoadAverage       LoadAverage
-	CPULoad           CPULoad
+	LoadAverage       *LoadAverage
+	CPULoad           *CPULoad
 	DiskLoad          []DiskLoad
 	DiskUsage         []DiskUsage
-	NetworkTopTalkers NetworkTopTalkers
-	NetworkStats      NetworkStats
+	NetworkTopTalkers *NetworkTopTalkers
+	NetworkStats      *NetworkStats
 }
 
 type LoadAverage struct {

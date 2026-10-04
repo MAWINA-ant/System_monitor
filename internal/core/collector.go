@@ -28,3 +28,9 @@ type NetworkTopTalkersCollector interface {
 type NetworkStatsCollector interface {
 	Collect(ctx context.Context) (NetworkStats, error)
 }
+
+// Runner is implemented by collectors that sample data in the background.
+// Run blocks until ctx is cancelled.
+type Runner interface {
+	Run(ctx context.Context)
+}
