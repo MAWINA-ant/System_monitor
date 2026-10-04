@@ -123,8 +123,36 @@ func TestCollector_Collect(t *testing.T) {
 	}
 }
 
+func TestCollector_Collect_UsesFreshSample(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "stat")
+
+	var current time.Time
+	c := New(time.Second, time.Minute)
+	c.statPath = path
+	c.now = func() time.Time { return current }
+
+	current = base
+	writeStat(t, path, "cpu  100 0 50 850 0 0 0 0\n")
+	c.sample()
+
+	// The sampler has not ticked again yet: Collect must not depend on it.
+	current = base.Add(time.Second)
+	writeStat(t, path, "cpu  200 0 100 1700 0 0 0 0\n")
+
+	got, err := c.Collect(context.Background(), time.Second)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := core.CPULoad{UserPercent: 10, SystemPercent: 5, IdlePercent: 85}
+	if got != want {
+		t.Errorf("Collect() = %+v, want %+v", got, want)
+	}
+}
+
 func TestCollector_Collect_NotEnoughSamples(t *testing.T) {
 	c := New(time.Second, time.Minute)
+	c.statPath = filepath.Join(t.TempDir(), "missing")
 
 	if _, err := c.Collect(context.Background(), 10*time.Second); !errors.Is(err, errNotEnoughSamples) {
 		t.Errorf("got %v, want %v", err, errNotEnoughSamples)

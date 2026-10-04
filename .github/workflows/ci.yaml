@@ -36,3 +36,9 @@ jobs:
           go-version: '1.27.1'
       - run: go build -o bin/server ./cmd/server
       - run: go build -o bin/client ./cmd/client
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: docker build -f build/Dockerfile -t system-monitor .

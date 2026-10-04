@@ -162,8 +162,35 @@ func TestCollector_Collect(t *testing.T) {
 	}
 }
 
+func TestCollector_Collect_UsesFreshSample(t *testing.T) {
+	c, statsPath := newTestCollector(t)
+
+	var current time.Time
+	c.now = func() time.Time { return current }
+
+	current = base
+	writeFile(t, statsPath, diskStatsFixture)
+	c.sample()
+
+	// The sampler has not ticked again yet: Collect must not depend on it.
+	current = base.Add(10 * time.Second)
+	writeFile(t, statsPath, `   8       0 sda 1250 10 30000 500 2250 20 50000 900 0 1200 1400 0 0 0 0
+`)
+
+	got, err := c.Collect(context.Background(), 10*time.Second)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := []core.DiskLoad{{Device: devSDA, TPS: 50, KBPerSec: 1000}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Collect() = %+v, want %+v", got, want)
+	}
+}
+
 func TestCollector_Collect_NotEnoughSamples(t *testing.T) {
 	c := New(time.Second, time.Minute)
+	c.statsPath = filepath.Join(t.TempDir(), "missing")
 
 	if _, err := c.Collect(context.Background(), 10*time.Second); !errors.Is(err, errNotEnoughSamples) {
 		t.Errorf("got %v, want %v", err, errNotEnoughSamples)

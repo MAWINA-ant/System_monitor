@@ -84,7 +84,10 @@ func (c *Collector) sample() {
 	c.history.Add(c.now(), times)
 }
 
+// Collect takes a fresh sample first, so the window ends right now and does not depend on the sampler tick.
 func (c *Collector) Collect(_ context.Context, timespan time.Duration) (core.CPULoad, error) {
+	c.sample()
+
 	oldest, newest, ok := c.history.Window(timespan)
 	if !ok {
 		return core.CPULoad{}, errNotEnoughSamples

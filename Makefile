@@ -1,4 +1,4 @@
-BIN := "./bin/server"
+IMG := system-monitor
 
 build-server:
 	go build -o bin/server ./cmd/server
@@ -8,8 +8,14 @@ build-client:
 
 build: build-server build-client
 
-version: build
-	$(BIN) version
+run:
+	go run ./cmd/server
+
+build-img:
+	docker build -f build/Dockerfile -t $(IMG) .
+
+run-img: build-img
+	docker run --rm -p 8080:8080 $(IMG)
 
 # needed install protobuf `apt install protobuf-compiler protoc-gen-go protoc-gen-go-grpc`
 install-proto-deps:
@@ -34,4 +40,4 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build version test lint
+.PHONY: build-server build-client build run build-img run-img install-proto-deps generate test install-lint-deps lint
