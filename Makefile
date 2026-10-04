@@ -34,10 +34,13 @@ generate: install-proto-deps
 test:
 	go test -race -count 100 ./...
 
+test-integration:
+	go test -tags integration -race -count 1 ./test/integration/...
+
 install-lint-deps:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
 
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build-server build-client build run build-img run-img install-proto-deps generate test install-lint-deps lint
+.PHONY: build-server build-client build run build-img run-img install-proto-deps generate test test-integration install-lint-deps lint

@@ -119,3 +119,14 @@ func TestParseFlags_Help(t *testing.T) {
 		t.Errorf("got %v, want %v", err, flag.ErrHelp)
 	}
 }
+
+func TestLoad_ShippedConfigEnablesEverything(t *testing.T) {
+	got, err := Load(filepath.Join("..", "..", "configs", "config.json"))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got != Default() {
+		t.Errorf("configs/config.json = %+v, want %+v", got, Default())
+	}
+}

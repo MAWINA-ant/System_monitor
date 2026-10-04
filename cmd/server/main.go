@@ -11,14 +11,9 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
-	"time"
 
-	pb "github.com/MAWINA-ant/System_monitor/api/statspb"
-	"github.com/MAWINA-ant/System_monitor/internal/collectors"
+	"github.com/MAWINA-ant/System_monitor/internal/app"
 	"github.com/MAWINA-ant/System_monitor/internal/config"
-	"github.com/MAWINA-ant/System_monitor/internal/core"
-	"github.com/MAWINA-ant/System_monitor/internal/server"
-	"google.golang.org/grpc"
 )
 
 func main() {
@@ -52,12 +47,7 @@ func run(args []string) error {
 		return fmt.Errorf("listen on %s: %w", addr, err)
 	}
 
-	newMonitor := func(timespan time.Duration) *core.Monitor {
-		return collectors.NewMonitor(cfg.Subsystems, timespan)
-	}
-
-	grpcServer := grpc.NewServer()
-	pb.RegisterStatsServiceServer(grpcServer, server.New(newMonitor))
+	grpcServer := app.NewGRPCServer(cfg)
 
 	go func() {
 		<-ctx.Done()
