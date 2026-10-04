@@ -2,43 +2,47 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
 	pb "github.com/MAWINA-ant/System_monitor/api/statspb"
+	"github.com/MAWINA-ant/System_monitor/internal/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	addr := flag.String("addr", "localhost:8080", "gRPC server address")
-	flag.Parse()
-
-	if err := run(*addr); err != nil {
-		log.Fatal(err)
+	if err := run(os.Args[1:]); err != nil {
+		slog.Error("client stopped", "error", err)
+		os.Exit(1)
 	}
 }
 
-func run(addr string) error {
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func run(args []string) error {
+	opts, err := client.ParseFlags(args, os.Stderr)
+	if errors.Is(err, flag.ErrHelp) {
+		return nil
+	}
 	if err != nil {
-		return fmt.Errorf("failed to connect: %w", err)
+		return err
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	conn, err := grpc.NewClient(opts.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("connect to %s: %w", opts.Addr, err)
 	}
 	defer conn.Close()
 
-	client := pb.NewStatsServiceClient(conn)
+	slog.Info("requesting statistics, the first snapshot comes after m seconds",
+		"addr", opts.Addr, "n", opts.N, "m", opts.M)
 
-	stream, err := client.GetStats(context.Background(), &pb.StatsRequest{NSeconds: 5, MSeconds: 15})
-	if err != nil {
-		return fmt.Errorf("failed to call GetStats: %w", err)
-	}
-
-	for {
-		snapshot, err := stream.Recv()
-		if err != nil {
-			return fmt.Errorf("stream error: %w", err)
-		}
-		log.Printf("received snapshot: %+v", snapshot)
-	}
+	return client.Run(ctx, pb.NewStatsServiceClient(conn), opts, os.Stdout)
 }
